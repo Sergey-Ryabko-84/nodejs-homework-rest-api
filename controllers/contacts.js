@@ -14,9 +14,8 @@ const getAll = async (req, res, next) => {
 };
 
 const getById = async (req, res, next) => {
-  const contact = await Contact.findById(req.params.id)
-    .where("owner")
-    .equals(req.user._id);
+  const { _id: owner } = req.user;
+  const contact = await Contact.findOne({ _id: req.params.id, owner });
   if (!contact) throw HttpError(404, "Not found");
   res.json(contact);
 };
@@ -30,9 +29,14 @@ const add = async (req, res, next) => {
 const updateById = async (req, res, next) => {
   if (Object.keys(req.body).length === 0)
     throw HttpError(400, "missing fields");
-  const contact = await Contact.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-  })
+  const { _id: owner } = req.user;
+  const contact = await Contact.findOneAndUpdate(
+    { _id: req.params.id, owner },
+    req.body,
+    {
+      new: true,
+    }
+  )
     .where("owner")
     .equals(req.user._id);
   if (!contact) throw HttpError(404, "Not found");
@@ -42,9 +46,14 @@ const updateById = async (req, res, next) => {
 const updateStatusContact = async (req, res, next) => {
   if (Object.keys(req.body).length === 0)
     throw HttpError(400, "missing field favorite");
-  const contact = await Contact.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-  })
+  const { _id: owner } = req.user;
+  const contact = await Contact.findOneAndUpdate(
+    { _id: req.params.id, owner },
+    req.body,
+    {
+      new: true,
+    }
+  )
     .where("owner")
     .equals(req.user._id);
   if (!contact) throw HttpError(404, "Not found");
@@ -52,7 +61,8 @@ const updateStatusContact = async (req, res, next) => {
 };
 
 const deleteById = async (req, res, next) => {
-  const contact = await Contact.findByIdAndRemove(req.params.id)
+  const { _id: owner } = req.user;
+  const contact = await Contact.findOneAndRemove({ _id: req.params.id, owner })
     .where("owner")
     .equals(req.user._id);
   if (!contact) throw HttpError(404, "Not found");
